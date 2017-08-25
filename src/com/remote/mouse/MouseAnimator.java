@@ -8,6 +8,7 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.ServerSocket;
@@ -21,7 +22,9 @@ public class MouseAnimator implements Runnable {
 	
 	private Socket inputSocket;
 	private ServerSocket mouseService;
-	private InputStreamReader in;
+	private BufferedReader in;
+	
+	private static boolean stop;
 	
 	public void init(){
 		try {
@@ -32,7 +35,7 @@ public class MouseAnimator implements Runnable {
 		try {
 			mouseService = new ServerSocket(RemoteController.MOUSE_PORT);
 			inputSocket = mouseService.accept();
-			in = new InputStreamReader(inputSocket.getInputStream());
+			in = new BufferedReader(new InputStreamReader(inputSocket.getInputStream()));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -58,19 +61,17 @@ public class MouseAnimator implements Runnable {
 	@Override
 	public void run() {
 		System.out.println("start moving");
-		int c;
-		char[] cbuf = new char[2];
+
 		try {
-			while ((c = in.read(cbuf, 0, 2)) != -1) {
-				System.out.println((int)cbuf[1]);
-				if (c > 0) {
-					if(cbuf[0] == 'M') {
-						mousetest(cbuf[1]);
-					} else {
-						//keyTyped(cbuf[1]);
-					}
+			while (!stop) {
+				String line = in.readLine();
+				if(line.contains(",")){
+					int movex = Integer.parseInt(line.split(",")[0]);//extract movement in x direction
+					int movey = Integer.parseInt(line.split(",")[1]);//extract movement in y direction
+					move(movex, movey);
+				} else {
+					keyTyped(Integer.parseInt(line));
 				}
-				
 			}
 		} catch (IOException | AWTException e) {
 			e.printStackTrace();

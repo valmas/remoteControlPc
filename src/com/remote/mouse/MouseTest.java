@@ -3,40 +3,35 @@ package com.remote.mouse;
 import java.awt.Dimension;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.io.BufferedOutputStream;
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.net.Socket;
 
 import javax.swing.JFrame;
 
+// http://codesmith.in/control-pc-from-android-app-using-java/
+// https://stackoverflow.com/questions/5143417/streaming-audio-from-a-socket-on-android-using-audiotrack
 
-public class MouseTest extends JFrame implements KeyListener{
+public class MouseTest extends JFrame implements KeyListener {
 	
-	private OutputStreamWriter out;
+	private PrintWriter out;
 
     public void keyPressed(KeyEvent e) {
         
     }
 
     public void keyReleased(KeyEvent e) {
-    	try {
     		char[] arr = {'M', (char) e.getKeyCode()};
 			out.write(arr);
 			out.flush();
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		}
 
     }
     public void keyTyped(KeyEvent e) {
-    	try {
     		char[] arr = {'K', (char) e.getKeyCode()};
 			out.write(arr);
 			out.flush();
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		}
     }
 
     public MouseTest(){
@@ -46,7 +41,11 @@ public class MouseTest extends JFrame implements KeyListener{
         
         try {
 			Socket sock = new Socket("127.0.0.1", 3335);
-			out = new OutputStreamWriter(sock.getOutputStream());
+			out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(sock
+					.getOutputStream())), true);
+			while(true) {
+			//out.println(KeyEvent.VK_DOWN);
+			}
 			
 		} catch (IOException e) {
 			e.printStackTrace();
